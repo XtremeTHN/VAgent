@@ -2,6 +2,10 @@
     border-radius: 16px;
 }
 
+.error-label {
+    font-size: small;
+}
+
 .background-window {
     background-color: rgba(0,0,0,0.7);
 }

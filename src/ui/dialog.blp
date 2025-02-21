@@ -36,6 +36,9 @@ template $AgDialog : Adw.Window {
           Gtk.Revealer error_revealer {
             halign: start;
             child: Gtk.Label error_label {
+              styles [
+                "error-label"
+              ]
               label: _("Authentication failed");
             };
           }

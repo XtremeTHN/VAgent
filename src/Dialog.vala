@@ -144,15 +144,24 @@ public class Ag.Dialog : Adw.Window {
         info (text);
     }
 
+    void reset_session() {
+        deinit_session ();
+        password.set_text ("");
+        password.grab_focus ();
+        init_session ();
+    }
+
     private void on_completed (bool authorized) {
         // this get's called when the session is completed
 
-        if (!authorized || _cancellable.is_cancelled ()) {
-            // if not authorized or was cancelled, reset password entry and reset session
-            deinit_session ();
-            password.set_text ("");
-            password.grab_focus ();
-            init_session ();
+        if (!authorized) {
+            // if not authorized, reset password entry, reset session, and request password
+            on_show_error ("Incorrect password");
+            reset_session ();
+            return;
+        } else if (_cancellable.is_cancelled ()) {
+            // if was cancelled, reset password entry and reset session
+            reset_session ();
             return;
         } else {
             // emit done signal
