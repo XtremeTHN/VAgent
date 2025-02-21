@@ -5,7 +5,7 @@ class Ag.Background : Gtk.Window {
         GtkLayerShell.set_anchor (this, GtkLayerShell.Edge.RIGHT, true);
         GtkLayerShell.set_anchor (this, GtkLayerShell.Edge.BOTTOM, true);
         GtkLayerShell.set_anchor (this, GtkLayerShell.Edge.LEFT, true);
-
-        add_css_class ("background-window");
+        set_css_classes ({"background-window"});
+        
     }
 }
