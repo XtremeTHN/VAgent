@@ -18,12 +18,14 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
+double background_opacity;
+
 namespace Kagent {
     public class App : Adw.Application {
         public App () {
             Object (
                 application_id: "com.github.XtremeTHN.KAgent", 
-                flags: ApplicationFlags.IS_SERVICE, 
+                flags: ApplicationFlags.IS_SERVICE | ApplicationFlags.HANDLES_COMMAND_LINE, 
                 register_session: true
             );
         }
@@ -46,11 +48,30 @@ namespace Kagent {
 
             hold();
         }
+        
+        static int? find(string match, string[] args) {
+            for (int i = 0; i<args.length; i++) {
+                if (match == args[i]) {
+                    return i;
+                }
+            }
+            return null;
+        }
 
         public static int main(string[] args) {
+            var match = find("--opacity", args);
+            double op = 0;
+            if (match != null) {
+                op = double.parse(args[match + 1]);
+            }
+            if (op > 1) {
+                critical("Opacity needs to be a range from 0 to 1");
+                return 1;
+            }
+
             var app = new Kagent.App ();
-    
-            return app.run (args);
+            background_opacity = op;
+            return app.run ();
         }
     }
 }
