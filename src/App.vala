@@ -18,7 +18,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-double background_opacity;
+double background_opacity = 0.7;
 
 namespace Kagent {
     public class App : Adw.Application {
@@ -63,6 +63,8 @@ namespace Kagent {
             double op = 0;
             if (match != null) {
                 op = double.parse(args[match + 1]);
+            } else {
+                op = 0.7;
             }
             if (op > 1) {
                 critical("Opacity needs to be a range from 0 to 1");
