@@ -73,7 +73,7 @@ namespace Kagent {
 
             var app = new Kagent.App ();
             background_opacity = op;
-            return app.run ();
+            return app.run (null);
         }
     }
 }
