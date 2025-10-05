@@ -3,3 +3,4 @@ builddir
 
 /subprojects/blueprint-compiler
 result
+.direnv
