@@ -1,6 +1,5 @@
-
 [GtkTemplate (ui = "/com/github/XtremeTHN/KAgent/dialog.ui")]
-public class Ag.Dialog : Adw.Window {
+public class KAgent.Dialog : Adw.ApplicationWindow {
     [GtkChild]
     private unowned Gtk.Label message;
 
@@ -40,11 +39,15 @@ public class Ag.Dialog : Adw.Window {
     private Cancellable _cancellable;
 
     public Dialog (string msg, string cookie, List<Polkit.Identity?>? idents, Cancellable cancellable) {
-        GtkLayerShell.init_for_window (this);
-        GtkLayerShell.set_keyboard_mode (this, GtkLayerShell.KeyboardMode.ON_DEMAND);
-        GtkLayerShell.set_layer (this, GtkLayerShell.Layer.OVERLAY);
+        // GtkLayerShell.init_for_window (this);
+        // GtkLayerShell.set_keyboard_mode (this, GtkLayerShell.KeyboardMode.ON_DEMAND);
+        // GtkLayerShell.set_layer (this, GtkLayerShell.Layer.OVERLAY);
 
-        set_css_classes ({"dialog", "background"});
+        Object (
+                application : new App ()
+        );
+
+        set_css_classes ({ "dialog", "background" });
         message.label = msg;
 
         _idents = idents;
@@ -60,10 +63,10 @@ public class Ag.Dialog : Adw.Window {
         password.grab_focus ();
 
         close_request.connect (() => {
-            cancel();
+            cancel ();
             return true;
         });
-        
+
         update_idents ();
         init_session ();
     }
@@ -76,7 +79,7 @@ public class Ag.Dialog : Adw.Window {
         foreach (unowned Polkit.Identity? ident in _idents) {
             // Getting user name
             unowned Posix.Passwd? pwd = Posix.getpwuid (((Polkit.UnixUser) ident).get_uid ());
-            
+
             // if the is not null then append it to the model
             if (pwd != null) {
                 users_combo_model.append (pwd.pw_name);
@@ -114,7 +117,7 @@ public class Ag.Dialog : Adw.Window {
         uint ident_pos = users_combo.selected;
 
         deinit_session ();
-        
+
         // Getting identity from _idents
         polkit_identity = _idents.nth_data (ident_pos);
 
@@ -124,7 +127,8 @@ public class Ag.Dialog : Adw.Window {
     private void deinit_session () {
         if (polkit_session == null) {
             return;
-        };
+        }
+        ;
 
         SignalHandler.disconnect (polkit_session, on_show_error_id);
         SignalHandler.disconnect (polkit_session, on_show_info_id);
@@ -139,12 +143,12 @@ public class Ag.Dialog : Adw.Window {
         error_label.label = error;
         error_revealer.set_reveal_child (true);
     }
-    
+
     private void on_show_info (string text) {
         info (text);
     }
 
-    void reset_session() {
+    void reset_session () {
         deinit_session ();
         password.set_text ("");
         password.grab_focus ();
@@ -166,7 +170,7 @@ public class Ag.Dialog : Adw.Window {
         } else {
             // emit done signal
             done ();
-            
+
             // Disconnect from notify, cuz if i dont disconnect it, an address boundary error will stop the program
             SignalHandler.disconnect (users_combo, on_dropdown_selected_change_id);
         }
@@ -176,7 +180,7 @@ public class Ag.Dialog : Adw.Window {
         if (polkit_session == null) {
             init_session ();
         }
-    
+
         error_revealer.set_reveal_child (false);
 
         // emiting response signal with the content of password entry

@@ -18,62 +18,61 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-double background_opacity = 0.7;
 
-namespace Kagent {
-    public class App : Adw.Application {
-        public App () {
-            Object (
-                application_id: "com.github.XtremeTHN.KAgent", 
-                flags: ApplicationFlags.IS_SERVICE | ApplicationFlags.HANDLES_COMMAND_LINE, 
+[SingleInstance]
+public class KAgent.App : Adw.Application {
+    public double background_opacity = 0.7;
+
+    public App () {
+        Object (
+                application_id: "com.github.XtremeTHN.KAgent",
+                flags: ApplicationFlags.HANDLES_COMMAND_LINE,
                 register_session: true
-            );
+        );
+    }
+
+    int init () {
+        var agent = new Listener ();
+
+        try {
+            var subject = new Polkit.UnixSession.for_process_sync (Posix.getpid (), new Cancellable ());
+            agent.register (NONE, subject, "/com/github/XtremeTHN/KAgent", new Cancellable ());
+        } catch (Error e) {
+            critical ("Error while trying to register the authentication agent: %s", e.message);
+            return 3;
         }
 
-        protected override void startup () {
-            base.startup ();
+        hold ();
+        return 0;
+    }
 
-            var agent = new Ag.Agent ();
-            var provider = new Gtk.CssProvider ();
-            provider.load_from_resource ("/com/github/XtremeTHN/KAgent/style.css");
-            
-            Gtk.StyleContext.add_provider_for_display (Gdk.Display.get_default (), provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION);
+    protected override int command_line (ApplicationCommandLine cmd) {
+        var args = cmd.get_arguments ();
+        var ctx = new OptionContext ();
 
-            try {
-                var subject = new Polkit.UnixSession.for_process_sync (Posix.getpid(), new Cancellable ());
-                agent.register (NONE, subject, "/com/github/XtremeTHN/KAgent", new Cancellable ());
-            } catch (Error e) {
-                critical ("Error while trying to register the authentication agent: %s", e.message);
-            }
+        OptionEntry[] entries = {
+            { "opacity", 'o', OptionFlags.NONE, OptionArg.DOUBLE, ref background_opacity, "Sets the background opacity. Range from 0 to 1", "OPACITY" }
+        };
 
-            hold();
-        }
-        
-        static int? find(string match, string[] args) {
-            for (int i = 0; i<args.length; i++) {
-                if (match == args[i]) {
-                    return i;
-                }
-            }
-            return null;
+        ctx.add_main_entries (entries, null);
+
+        try {
+            ctx.parse_strv (ref args);
+        } catch (Error e) {
+            warning ("Couldn't parse arguments: %s", e.message);
+            return 1;
         }
 
-        public static int main(string[] args) {
-            var match = find("--opacity", args);
-            double op = 0;
-            if (match != null) {
-                op = double.parse(args[match + 1]);
-            } else {
-                op = 0.7;
-            }
-            if (op > 1) {
-                critical("Opacity needs to be a range from 0 to 1");
-                return 1;
-            }
-
-            var app = new Kagent.App ();
-            background_opacity = op;
-            return app.run (null);
+        if (background_opacity > 1 || background_opacity < 0) {
+            warning ("Only values between 0 and 1 are allowed.");
+            return 2;
         }
+
+        return init ();
+    }
+
+    public static int main (string[] args) {
+        var app = new App ();
+        return app.run (args);
     }
 }
