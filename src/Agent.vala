@@ -5,8 +5,8 @@ public class KAgent.Listener : PolkitAgent.Listener {
         if (identities == null)
             return false;
 
-        // var background = new Ag.Background ();
-        // background.present ();
+        var background = new Background ();
+        background.present ();
 
         var dialog = new Dialog (message, cookie, identities, cancellable);
 
@@ -15,7 +15,7 @@ public class KAgent.Listener : PolkitAgent.Listener {
         dialog.present ();
         yield;
 
-        // background.destroy ();
+        background.destroy ();
         dialog.destroy ();
 
         if (dialog.was_cancelled)

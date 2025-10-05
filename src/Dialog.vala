@@ -39,13 +39,13 @@ public class KAgent.Dialog : Adw.ApplicationWindow {
     private Cancellable _cancellable;
 
     public Dialog (string msg, string cookie, List<Polkit.Identity?>? idents, Cancellable cancellable) {
-        // GtkLayerShell.init_for_window (this);
-        // GtkLayerShell.set_keyboard_mode (this, GtkLayerShell.KeyboardMode.ON_DEMAND);
-        // GtkLayerShell.set_layer (this, GtkLayerShell.Layer.OVERLAY);
-
         Object (
                 application : new App ()
         );
+
+        GtkLayerShell.init_for_window (this);
+        GtkLayerShell.set_keyboard_mode (this, GtkLayerShell.KeyboardMode.ON_DEMAND);
+        GtkLayerShell.set_layer (this, GtkLayerShell.Layer.OVERLAY);
 
         set_css_classes ({ "dialog", "background" });
         message.label = msg;
