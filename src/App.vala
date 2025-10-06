@@ -18,61 +18,65 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-
-[SingleInstance]
-public class KAgent.App : Adw.Application {
+namespace KAgent {
     public double background_opacity = 0.7;
+    public bool disable_background;
 
-    public App () {
-        Object (
-                application_id: "com.github.XtremeTHN.KAgent",
-                flags: ApplicationFlags.HANDLES_COMMAND_LINE,
-                register_session: true
-        );
-    }
+    public class App : Adw.Application {
 
-    int init () {
-        var agent = new Listener ();
 
-        try {
-            var subject = new Polkit.UnixSession.for_process_sync (Posix.getpid (), new Cancellable ());
-            agent.register (NONE, subject, "/com/github/XtremeTHN/KAgent", new Cancellable ());
-        } catch (Error e) {
-            critical ("Error while trying to register the authentication agent: %s", e.message);
-            return 3;
+        public App () {
+            Object (
+                    application_id: "com.github.XtremeTHN.KAgent",
+                    flags: ApplicationFlags.HANDLES_COMMAND_LINE,
+                    register_session: true
+            );
         }
 
-        hold ();
-        return 0;
-    }
+        int init () {
+            var agent = new Listener ();
 
-    protected override int command_line (ApplicationCommandLine cmd) {
-        var args = cmd.get_arguments ();
-        var ctx = new OptionContext ();
+            try {
+                var subject = new Polkit.UnixSession.for_process_sync (Posix.getpid (), new Cancellable ());
+                agent.register (NONE, subject, "/com/github/XtremeTHN/KAgent", new Cancellable ());
+            } catch (Error e) {
+                critical ("Error while trying to register the authentication agent: %s", e.message);
+                return 3;
+            }
 
-        OptionEntry[] entries = {
-            { "opacity", 'o', OptionFlags.NONE, OptionArg.DOUBLE, ref background_opacity, "Sets the background opacity. Range from 0 to 1", "OPACITY" }
-        };
-
-        ctx.add_main_entries (entries, null);
-
-        try {
-            ctx.parse_strv (ref args);
-        } catch (Error e) {
-            warning ("Couldn't parse arguments: %s", e.message);
-            return 1;
+            hold ();
+            return 0;
         }
 
-        if (background_opacity > 1 || background_opacity < 0) {
-            warning ("Only values between 0 and 1 are allowed.");
-            return 2;
+        protected override int command_line (ApplicationCommandLine cmd) {
+            var args = cmd.get_arguments ();
+            var ctx = new OptionContext ();
+
+            OptionEntry[] entries = {
+                { "opacity", 'o', OptionFlags.NONE, OptionArg.DOUBLE, ref background_opacity, "Sets the background opacity. Range from 0 to 1", "OPACITY" },
+                { "disable-background", 'd', OptionFlags.NONE, OptionArg.NONE, ref disable_background, "Disables background" }
+            };
+
+            ctx.add_main_entries (entries, null);
+
+            try {
+                ctx.parse_strv (ref args);
+            } catch (Error e) {
+                warning ("Couldn't parse arguments: %s", e.message);
+                return 1;
+            }
+
+            if (background_opacity > 1 || background_opacity < 0) {
+                warning ("Only values between 0 and 1 are allowed.");
+                return 2;
+            }
+
+            return init ();
         }
 
-        return init ();
-    }
-
-    public static int main (string[] args) {
-        var app = new App ();
-        return app.run (args);
+        public static int main (string[] args) {
+            var app = new App ();
+            return app.run (args);
+        }
     }
 }

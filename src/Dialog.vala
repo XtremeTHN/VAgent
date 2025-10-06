@@ -1,5 +1,5 @@
 [GtkTemplate (ui = "/com/github/XtremeTHN/KAgent/dialog.ui")]
-public class KAgent.Dialog : Adw.ApplicationWindow {
+public class KAgent.Dialog : Adw.Window {
     [GtkChild]
     private unowned Gtk.Label message;
 
@@ -17,6 +17,9 @@ public class KAgent.Dialog : Adw.ApplicationWindow {
 
     [GtkChild]
     private unowned Gtk.Button auth_btt;
+
+    [GtkChild]
+    private unowned Adw.Spinner spinner;
 
     private Gtk.StringList users_combo_model;
 
@@ -39,12 +42,8 @@ public class KAgent.Dialog : Adw.ApplicationWindow {
     private Cancellable _cancellable;
 
     public Dialog (string msg, string cookie, List<Polkit.Identity?>? idents, Cancellable cancellable) {
-        Object (
-                application : new App ()
-        );
-
         GtkLayerShell.init_for_window (this);
-        GtkLayerShell.set_keyboard_mode (this, GtkLayerShell.KeyboardMode.ON_DEMAND);
+        GtkLayerShell.set_keyboard_mode (this, GtkLayerShell.KeyboardMode.EXCLUSIVE);
         GtkLayerShell.set_layer (this, GtkLayerShell.Layer.OVERLAY);
 
         set_css_classes ({ "dialog", "background" });
@@ -56,15 +55,11 @@ public class KAgent.Dialog : Adw.ApplicationWindow {
 
         cancellable.cancelled.connect (cancel);
 
-        on_dropdown_selected_change_id = users_combo.notify.connect (on_dropdown_selected_change);
-
-        auth_btt.clicked.connect (authenticate);
-
-        password.grab_focus ();
+        users_combo.notify["selected-item"].connect (on_dropdown_selected_change);
 
         close_request.connect (() => {
             cancel ();
-            return true;
+            return false;
         });
 
         update_idents ();
@@ -111,6 +106,8 @@ public class KAgent.Dialog : Adw.ApplicationWindow {
         on_request_id = polkit_session.request.connect (on_request);
 
         polkit_session.initiate ();
+
+        password.grab_focus ();
     }
 
     private void on_dropdown_selected_change () {
@@ -151,7 +148,6 @@ public class KAgent.Dialog : Adw.ApplicationWindow {
     void reset_session () {
         deinit_session ();
         password.set_text ("");
-        password.grab_focus ();
         init_session ();
     }
 
@@ -162,21 +158,22 @@ public class KAgent.Dialog : Adw.ApplicationWindow {
             // if not authorized, reset password entry, reset session, and request password
             on_show_error ("Incorrect password");
             reset_session ();
-            return;
         } else if (_cancellable.is_cancelled ()) {
             // if was cancelled, reset password entry and reset session
             reset_session ();
-            return;
         } else {
             // emit done signal
             done ();
-
-            // Disconnect from notify, cuz if i dont disconnect it, an address boundary error will stop the program
-            SignalHandler.disconnect (users_combo, on_dropdown_selected_change_id);
         }
+
+        set_sensitive (true);
+        spinner.set_visible (false);
     }
 
+    [GtkCallback]
     private void authenticate () {
+        set_sensitive (false);
+        spinner.set_visible (true);
         if (polkit_session == null) {
             init_session ();
         }
@@ -198,9 +195,6 @@ public class KAgent.Dialog : Adw.ApplicationWindow {
         if (polkit_session != null) {
             polkit_session.cancel ();
         }
-
-        // Disconnect from notify, cuz if i dont disconnect it, an address boundary error will stop the program
-        SignalHandler.disconnect (users_combo, on_dropdown_selected_change_id);
 
         debug ("Authentication cancelled");
         was_cancelled = true;

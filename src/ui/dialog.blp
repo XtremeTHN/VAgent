@@ -1,17 +1,19 @@
 using Gtk 4.0;
 using Adw 1;
 
-template $KAgentDialog: Adw.ApplicationWindow {
+template $KAgentDialog: Adw.Window {
+  resizable: false;
+
   content: Adw.ToolbarView {
     [top]
     Adw.HeaderBar {}
 
     content: Adw.Clamp {
       child: Gtk.Box {
-        margin-top: 10;
-        margin-end: 10;
-        margin-bottom: 10;
-        margin-start: 10;
+        styles [
+          "box-10",
+        ]
+
         orientation: vertical;
 
         Gtk.Label {
@@ -36,6 +38,7 @@ template $KAgentDialog: Adw.ApplicationWindow {
 
           Gtk.PasswordEntry password {
             placeholder-text: _("User password");
+            activate => $authenticate();
           }
 
           Gtk.Revealer error_revealer {
@@ -53,7 +56,22 @@ template $KAgentDialog: Adw.ApplicationWindow {
         }
 
         Gtk.Button auth_btt {
-          label: _("Authenticate");
+          clicked => $authenticate();
+
+          child: Box {
+            spacing: 5;
+            halign: center;
+
+            Adw.Spinner spinner {
+              height-request: 8;
+              width-request: 8;
+              visible: false;
+            }
+
+            Label {
+              label: _("Authenticate");
+            }
+          };
 
           styles [
             "warning",

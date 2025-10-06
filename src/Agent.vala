@@ -5,21 +5,27 @@ public class KAgent.Listener : PolkitAgent.Listener {
         if (identities == null)
             return false;
 
-        var background = new Background ();
-        background.present ();
+        Background? bg = null;
+
+        if (disable_background == false) {
+            bg = new Background ();
+            bg.present ();
+        }
 
         var dialog = new Dialog (message, cookie, identities, cancellable);
-
         dialog.done.connect (() => initiate_authentication.callback ());
-
         dialog.present ();
+
         yield;
 
-        background.destroy ();
-        dialog.destroy ();
+        if (disable_background == false) {
+            bg.destroy ();
+        }
 
-        if (dialog.was_cancelled)
+        dialog.destroy ();
+        if (dialog.was_cancelled) {
             throw new Polkit.Error.CANCELLED ("Authentication dialog was dismissed by the user");
+        }
 
         return true;
     }

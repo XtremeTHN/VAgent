@@ -31,6 +31,7 @@
         packages = with pkgs; [
           vala-language-server
           uncrustify
+          gdb
         ];
       };
 
