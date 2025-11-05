@@ -1,0 +1,9 @@
+.fullscreen {
+    outline: 1px solid rgb(255 255 255 / 7%);
+    outline-offset: -1px;
+    border-radius: 14px;
+}
+
+.box-10 {
+    padding: 10px;
+}

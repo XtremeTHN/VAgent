@@ -1,0 +1,80 @@
+using Gtk 4.0;
+using Adw 1;
+
+template $Window: Adw.Window {
+  resizable: false;
+
+  content: Adw.ToolbarView {
+    [top]
+    Adw.HeaderBar {}
+
+    content: Adw.Clamp {
+      child: Box {
+        styles [
+          "box-10",
+        ]
+
+        hexpand: true;
+        orientation: vertical;
+
+        Label {
+          styles [
+            "title-4",
+          ]
+
+          label: "Authentication required";
+        }
+
+        Label subtitle {
+          margin-bottom: 10;
+        }
+
+        DropDown users_dropdown {}
+
+        PasswordEntry password_entry {
+          margin-top: 5;
+          placeholder-text: _("Password");
+          activate => $authenticate();
+        }
+
+        Revealer revealer {
+          halign: start;
+          margin-top: 5;
+          margin-start: 1;
+
+          child: Label error_label {
+            styles [
+              "error",
+              "caption",
+            ]
+
+            halign: center;
+            label: "Authentication failed";
+          };
+        }
+
+        Button {
+          styles [
+            "warning",
+          ]
+
+          margin-top: 5;
+          clicked => $authenticate();
+
+          child: Box {
+            spacing: 5;
+            halign: center;
+
+            Adw.Spinner spinner {
+              visible: false;
+            }
+
+            Label {
+              label: "Authenticate";
+            }
+          };
+        }
+      };
+    };
+  };
+}
