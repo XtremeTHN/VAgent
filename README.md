@@ -1,7 +1,8 @@
 # VAgent
 A polkit authentication agent written in vala using gtk4 and libadwaita.
 
-<img width="1921" height="1081" alt="Preview" src="https://github.com/user-attachments/assets/67b4f474-fc22-4c1e-a8d0-9510066593e1" />
+<img width="1921" height="1081" alt="Preview" src="https://github.com/user-attachments/assets/c88160df-ee1e-41c9-b72e-57cad41cf981" />
+
 
 ## Building
 Nix
